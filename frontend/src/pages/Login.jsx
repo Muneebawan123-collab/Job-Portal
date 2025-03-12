@@ -11,7 +11,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+      const response = await axios.post(`${API_URL}/users/login`, { email, password });
       console.log("Login successful:", response.data);
       alert("Login successful");
     } catch (err) {

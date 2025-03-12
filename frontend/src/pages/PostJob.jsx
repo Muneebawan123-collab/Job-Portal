@@ -1,5 +1,7 @@
+// src/pages/PostJob.jsx
 import { useState } from "react";
-import { Form, Button, Container, Alert } from "react-bootstrap";
+import { Form, Button, Container, Alert, Spinner } from "react-bootstrap";
+import API_URL from "../api"; // Import API URL
 
 const PostJob = () => {
   const [formData, setFormData] = useState({
@@ -11,59 +13,94 @@ const PostJob = () => {
   });
 
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false); // Loading state
 
+  // Handle form input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const response = await fetch("http://localhost:5000/api/jobs/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
+    console.log("Submitting Job Data:", formData);
 
-    const data = await response.json();
-    if (response.ok) {
+    e.preventDefault();
+    setLoading(true); // Show loading
+  
+    try {
+      const token = localStorage.getItem("token"); // Get token from localStorage
+      if (!token) {
+        setMessage("Unauthorized! Please login.");
+        setLoading(false);
+        return;
+      }
+  
+      const response = await fetch(`${API_URL}/jobs/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // Include token
+        },
+        body: JSON.stringify(formData),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to post job");
+      }
+  
       setMessage("Job posted successfully!");
       setFormData({ title: "", description: "", company: "", location: "", salary: "" });
-    } else {
+    } catch (error) {
       setMessage("Error posting job. Try again.");
+      console.error("Error:", error);
+    } finally {
+      setLoading(false); // Hide loading
     }
   };
+  
 
   return (
     <Container className="mt-4">
       <h2>Post a Job</h2>
+
+      {/* Alert message for success or error */}
       {message && <Alert variant={message.includes("success") ? "success" : "danger"}>{message}</Alert>}
-      <Form onSubmit={handleSubmit} className="shadow p-4 bg-light">
+
+      <Form onSubmit={handleSubmit} className="shadow p-4 bg-light rounded">
+        {/* Job Title */}
         <Form.Group className="mb-3">
           <Form.Label>Job Title</Form.Label>
-          <Form.Control type="text" name="title" value={formData.title} onChange={handleChange} required />
+          <Form.Control type="text" name="title" value={formData.title} onChange={handleChange} autoComplete="off" required />
         </Form.Group>
 
+        {/* Company */}
         <Form.Group className="mb-3">
           <Form.Label>Company</Form.Label>
-          <Form.Control type="text" name="company" value={formData.company} onChange={handleChange} required />
+          <Form.Control type="text" name="company" value={formData.company} onChange={handleChange} autoComplete="off" required />
         </Form.Group>
 
+        {/* Location */}
         <Form.Group className="mb-3">
           <Form.Label>Location</Form.Label>
-          <Form.Control type="text" name="location" value={formData.location} onChange={handleChange} required />
+          <Form.Control type="text" name="location" value={formData.location} onChange={handleChange} autoComplete="off" required />
         </Form.Group>
 
+        {/* Salary */}
         <Form.Group className="mb-3">
           <Form.Label>Salary</Form.Label>
-          <Form.Control type="number" name="salary" value={formData.salary} onChange={handleChange} required />
+          <Form.Control type="number" name="salary" value={formData.salary} onChange={handleChange} autoComplete="off" required />
         </Form.Group>
 
+        {/* Job Description */}
         <Form.Group className="mb-3">
           <Form.Label>Job Description</Form.Label>
-          <Form.Control as="textarea" name="description" value={formData.description} onChange={handleChange} required />
+          <Form.Control as="textarea" name="description" value={formData.description} onChange={handleChange} autoComplete="off" required />
         </Form.Group>
 
-        <Button variant="primary" type="submit">Post Job</Button>
+        {/* Submit Button */}
+        <Button variant="primary" type="submit" disabled={loading}>
+          {loading ? <Spinner animation="border" size="sm" /> : "Post Job"}
+        </Button>
       </Form>
     </Container>
   );

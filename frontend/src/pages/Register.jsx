@@ -16,18 +16,26 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch("http://localhost:5000/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-
-    const data = await response.json();
-    if (response.ok) {
-      setMessage("Registration successful! Please login.");
-      setFormData({ name: "", email: "", password: "" });
-    } else {
-      setMessage("Error registering user.");
+    try {
+      const response = await fetch("http://localhost:5000/api/users/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+  
+      const data = await response.json();
+      console.log("Response Data:", data); // Debugging
+      console.log("Response Status:", response.status); // Debugging
+  
+      if (response.ok) {
+        setMessage("Registration successful! Please login.");
+        setFormData({ name: "", email: "", password: "" });
+      } else {
+        setMessage(data.message || "Error registering user.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setMessage("Server not reachable. Check if backend is running.");
     }
   };
 

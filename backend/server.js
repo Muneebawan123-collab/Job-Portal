@@ -2,26 +2,31 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const connectDB = require("./config/database");
+const morgan = require("morgan"); // Optional for logging
 
+// Load environment variables
 dotenv.config();
-
-const app = express();
-app.use(express.json());
-app.use(cors());
 
 const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/job_portal";
 
-app.use(express.json()); // This allows Express to parse JSON request bodies
 
+// Connect to MongoDB
+connectDB();
+
+// Initialize Express app
+const app = express();
+
+// Middleware
+app.use(express.json()); // Allows Express to parse JSON request bodies
+app.use(cors()); // Enables Cross-Origin Resource Sharing
+app.use(morgan("dev")); // Logs incoming requests
+
+// Debugging: Check if auth token is received
 app.use((req, res, next) => {
-    console.log("Auth Header:", req.headers.authorization); // Check if token is received
+    console.log("Auth Header:", req.headers.authorization);
     next();
 });
-
-
-mongoose.connect(mongoURI)
-    .then(() => console.log("MongoDB Connected"))
-    .catch((err) => console.error(err));
 
 // Import Routes
 const userRoutes = require("./routes/userRoutes");
@@ -31,5 +36,12 @@ const jobRoutes = require("./routes/jobRoutes");
 app.use("/api/users", userRoutes);
 app.use("/api/jobs", jobRoutes);
 
+// Global Error Handling Middleware
+app.use((err, req, res, next) => {
+    console.error("Error:", err.message);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+});
+
+// Start Server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
