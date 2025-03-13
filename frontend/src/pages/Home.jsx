@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import API_URL from "../api";
-import { Link } from "react-router-dom";
 
 const Home = () => {
   const [jobs, setJobs] = useState([]);
@@ -9,38 +8,38 @@ const Home = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        console.log("Fetching jobs from:", `${API_URL}/jobs`);
         const response = await axios.get(`${API_URL}/jobs`);
-        console.log("Response received:", response.data);
-        setJobs(response.data);
-      } catch (err) {
-        console.error("Error fetching jobs:", err);
+        setJobs(response.data); // Store jobs in state
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
       }
     };
-
     fetchJobs();
   }, []);
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4">Job Listings</h2>
-      {jobs.length > 0 ? (
-        <div className="list-group">
-          {jobs.map((job) => (
-            <Link 
-              to={`/job/${job._id}`} 
-              className="list-group-item list-group-item-action" 
-              key={job._id}
-            >
-              <h5>{job.title} - {job.company}</h5>
-              <p className="mb-1"><strong>Location:</strong> {job.location}</p>
-              <p><strong>Salary:</strong> {job.salary}</p>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <p>No jobs available</p>
-      )}
+      <h2 className="text-center mb-4">Latest Job Listings</h2>
+      <div className="row">
+        {jobs.length > 0 ? (
+          jobs.map((job) => (
+            <div className="col-md-4 mb-4" key={job._id}>
+              <div className="card shadow-sm">
+                <div className="card-body">
+                  <h5 className="card-title">{job.title}</h5>
+                  <h6 className="card-subtitle mb-2 text-muted">{job.company}</h6>
+                  <p className="card-text">{job.description.slice(0, 100)}...</p>
+                  <p className="text-success fw-bold">💰 Salary: {job.salary}</p>
+                  <p className="text-primary fw-bold">📍 Location: {job.location}</p>
+                  <button className="btn btn-primary">Apply Now</button>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-center">No jobs available.</p>
+        )}
+      </div>
     </div>
   );
 };

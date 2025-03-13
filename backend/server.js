@@ -28,6 +28,9 @@ app.use((req, res, next) => {
     next();
 });
 
+console.log("JWT_SECRET from .env:", process.env.JWT_SECRET);
+
+
 // Import Routes
 const userRoutes = require("./routes/userRoutes");
 const jobRoutes = require("./routes/jobRoutes");

@@ -22,8 +22,6 @@ const PostJob = () => {
 
   // Handle form submission
   const handleSubmit = async (e) => {
-    console.log("Submitting Job Data:", formData);
-
     e.preventDefault();
     setLoading(true); // Show loading
   
@@ -34,30 +32,40 @@ const PostJob = () => {
         setLoading(false);
         return;
       }
-  
+
+      // Ensure salary is sent as a number
+      const jobData = {
+        ...formData,
+        salary: Number(formData.salary) || 0,
+      };
+
+      console.log("Submitting Job Data:", jobData);
+
       const response = await fetch(`${API_URL}/jobs/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`, // Include token
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(jobData),
       });
-  
+
+      const responseData = await response.json();
+      console.log("Response Data:", responseData);
+
       if (!response.ok) {
-        throw new Error("Failed to post job");
+        throw new Error(responseData.message || "Failed to post job");
       }
-  
+
       setMessage("Job posted successfully!");
       setFormData({ title: "", description: "", company: "", location: "", salary: "" });
     } catch (error) {
-      setMessage("Error posting job. Try again.");
+      setMessage(`Error: ${error.message}`);
       console.error("Error:", error);
     } finally {
       setLoading(false); // Hide loading
     }
   };
-  
 
   return (
     <Container className="mt-4">
